@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="container mt-4">
+    <h1 class="text-center mb-4">Gestionar Estudiantes</h1>
+    <div class="d-flex align-items-center mb-3">
+        <h2>Estudiantes registrados<a href="{% url 'crear_estudiante' %}" class="btn btn-outline-success btn-sm ms-2"><i class="fas fa-plus"></i></a></h2>
+        <div class="text-success ms-3">
+            {% for message in messages %}
+                <p class="mb-0">{{message}}</p>
+            {% endfor %}
+        </div>
+    </div>
+
+
+    <div class="list-group">
+        {% for e in page_obj %}
+        <div class="list-group-item" style="background-color: #EDFFEE;">
+            <div class="row">
+                <div class="col-1">
+                    <img src="{% static 'img/pepi.jpg' %}" alt="Perfil" class="rounded-circle w-100 h-100">
+                </div>
+                <div class="col-5">
+                    <h5 class="mb-1">Nombre: {{ e.nombre }}</h5>
+                    <p class="mb-1">Usuario: {{ e.user.username }}</p>
+                    <p class="mb-1">Correo: {{ e.correo }}</p>
+                </div>
+                <div class="col-2 ms-auto">
+                    <a href="#" class="btn btn-outline-primary mb-2 d-block fw-bold">Editar</a>
+                    <a href="#" class="btn btn-outline-dark d-block fw-bold eliminar-estudiante-btn" data-bs-toggle="modal" data-bs-target="#modal-eliminar-estudiante" data-bs-id="{{ e.id }}">Eliminar</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+        <div class="pagination">
+            <span class="step-links">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1">&laquo; Primera</a>
+                    <a href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+                {% endif %}
+        
+                <span class="current">
+                    Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}.
+                </span>
+        
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}">Siguiente</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}">Última &raquo;</a>
+                {% endif %}
+            </span>
+        </div>
+
+    </div>
+    <a href="{% url 'panel_administracion' %}" class="btn btn-secondary mt-3">Volver al panel de administración</a>
+</div>
+
+<!--Bloque ventanas modales-->
+<div class="modal fade" id="modal-eliminar-estudiante" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">¿Eliminar estudiante?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Esta acción eliminará de forma permanente al estudiante de la plataforma y su usuario para acceder, ¿desea continuar?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-dark fw-bold" id="confirmar-eliminacion">Eliminar</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>                
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+    <script src="{% static 'js/gestionar_estudiantes.js' %}"></script>
+{% endblock %}

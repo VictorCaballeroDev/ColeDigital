@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load paginator_tags %}
+
+{% block style %}
+<link rel="stylesheet" href="{% static 'css/gestionar_asignaturas.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="container mt-4">
+    <h1 class="text-center mb-4">Gestionar Asignaturas</h1>
+    <div class="d-flex align-items-center mb-3">
+        <h2>Asignaturas registradas<a href="{% url 'crear_asignatura' %}" class="btn btn-outline-danger btn-sm ms-2"><i class="fas fa-plus"></i></a></h2>
+        <div class="text-success ms-3">
+            {% for message in messages %}
+                <p class="mb-0">{{message}}</p>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <table class="table table-sm table-striped table-bordered border-danger">
+        <thead class="table-danger table-bordered border-danger">
+            <tr>
+                <th scope="col">Asignatura (Haga click para ver detalles de cada asignatura)</th>
+                <th scope="col" class="text-center">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for asignatura in page_obj %}
+                <tr>
+                    <td scope="row" class="hover-cell" style="transform: rotate(0);"><a class="link-underline link-underline-opacity-0 stretched-link text-danger fw-bold" href="{% url "detalles_asignatura" asignatura.id %}">{{ asignatura.nombre }}</a></td>
+                    <td class="text-center">
+                        <button type="button" class="btn btn-outline-primary btn-sm fw-bold cambiar-nombre-btn" data-bs-toggle="modal" data-bs-target="#modal-cambiar-nombre" data-bs-nombre="{{ asignatura.nombre }}" data-bs-id="{{ asignatura.id }}">Cambiar nombre</button>
+                        <button type="button" class="btn btn-outline-dark btn-sm ms-2 fw-bold eliminar-asignatura-btn" data-bs-toggle="modal" data-bs-target="#modal-eliminar-asignatura" data-bs-nombre="{{ asignatura.nombre }}" data-bs-id="{{ asignatura.id }}">Eliminar</button>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!--Paginacion-->
+    <div class="d-flex justify-content-center">
+        <nav aria-label="Page navigation">
+            <ul class="pagination">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1" aria-label="First">
+                            <span aria-hidden="true">&laquo;&laquo;</span>
+                            <span class="sr-only">Primera</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                            <span class="sr-only">Anterior</span>
+                        </a>
+                    </li>
+                {% endif %}
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                    {% endif %}
+                {% endfor %}
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                            <span class="sr-only">Siguiente</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Last">
+                            <span aria-hidden="true">&raquo;&raquo;</span>
+                            <span class="sr-only">Última</span>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    <!--Fin paginacion-->
+
+    <div>
+        <a href="{% url 'panel_administracion' %}" class="btn btn-secondary">Volver al panel de administración</a>
+    </div>
+</div>
+
+
+<!-- Bloque de ventanas modales -->
+
+<div class="modal fade" id="modal-cambiar-nombre" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Cambiar nombre asignatura</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" id="cambiar-nombre-form">
+                    {% csrf_token %}
+                    {{ form_cambio_nombre.as_p }}
+                    <div id="error-message" class="text-danger mt-1 mb-3" style="display:none;">El nuevo nombre debe ser diferente</div>
+                    <button type="submit" name="form-cambio-nombre" class="btn btn-primary fw-bold">Cambiar</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modal-eliminar-asignatura" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">¿Eliminar asignatura?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Esta acción eliminará la asignatura y todo su contenido, ¿desea continuar?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-dark fw-bold" id="confirmar-eliminacion">Eliminar</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>                
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block script %}
+    <script src="{% static 'js/gestionar_asignaturas.js' %}"></script>
+{% endblock %}

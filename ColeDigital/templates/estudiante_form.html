@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+
+{% block content %}
+    <div class="container mt-4 d-flex justify-content-center">
+        <div class="card p-4">
+            <h1 class="text-center">Crear estudiante</h1>
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="{{ form.username.id_for_label }}">Nombre de usuario:</label>
+                    {{ form.username|add_class:"form-control" }}
+                    {% if form.username.errors %}
+                        <div class="text-danger">
+                            {% for error in form.username.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="mb-3">
+                    <label for="{{ form.password1.id_for_label }}">Contraseña:</label>
+                    {{ form.password1|add_class:"form-control" }}
+                    {% if form.password1.errors %}
+                        <div class="text-danger">
+                            {% for error in form.password1.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="mb-3">
+                    <label for="{{ form.password2.id_for_label }}">Confirmar contraseña:</label>
+                    {{ form.password2|add_class:"form-control" }}
+                    {% if form.password2.errors %}
+                        <div class="text-danger">
+                            {% for error in form.password2.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="mb-3">
+                    <label for="{{ form.nombre.id_for_label }}">Nombre:</label>
+                    {{ form.nombre|add_class:"form-control" }}
+                    {% if form.nombre.errors %}
+                        <div class="text-danger">
+                            {% for error in form.nombre.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="mb-3">
+                    <label for="{{ form.correo.id_for_label }}">Correo electrónico:</label>
+                    {{ form.correo|add_class:"form-control" }}
+                    {% if form.correo.errors %}
+                        <div class="text-danger">
+                            {% for error in form.correo.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                <button type="submit" class="btn btn-primary mt-3 mb-3 me-2">Guardar y volver</button>
+                <button type="submit" name="guardar_otro" class="btn btn-primary mt-3 mb-3">Guardar y añadir otro estudiante</button>
+
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <a href="{% url 'gestionar_estudiantes' %}" class="btn btn-secondary me-2">Volver a Estudiantes</a>
+                        <a href="{% url 'panel_administracion' %}" class="btn btn-secondary">Volver al panel de administración</a>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-center text-success">
+                    {% for message in messages %}
+                        <p>{{message}}</p>
+                    {% endfor %}
+                </div>
+
+            </form>
+        </div>
+    </div>
+{% endblock %}

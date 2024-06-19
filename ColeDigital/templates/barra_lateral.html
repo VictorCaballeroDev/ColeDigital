@@ -1,0 +1,35 @@
+<nav id="sidebar" class="bg-light border-right d-flex flex-column vh-100">
+    <div class="p-3">
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link" href="#">
+                    <i class="fas fa-tasks me-2"></i>
+                    Tareas Pendientes
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">
+                    <i class="fas fa-calendar-alt me-2"></i>
+                    Calendario
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#asignaturasSubmenu" data-bs-toggle="collapse" aria-expanded="false">
+                    <i class="fas fa-book me-2"></i>
+                    Mis clases
+                </a>
+                <ul class="collapse list-unstyled" id="asignaturasSubmenu">
+                    {% for asignatura in asignaturas %}
+                        <li class="nav-item">
+                            {% if grupo == 'estudiante' %}
+                                <a class="nav-link" href="{% url "presentacion_asignatura_estudiantes" asignatura.id %}">{{ asignatura.nombre }}</a>
+                            {% elif grupo == 'profesor' %}
+                                <a class="nav-link" href="{% url "presentacion_asignatura_profesores" asignatura.id %}">{{ asignatura.nombre }}</a>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            </li>
+        </ul>
+    </div>
+</nav>

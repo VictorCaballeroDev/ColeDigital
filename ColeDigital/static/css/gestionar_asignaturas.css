@@ -1,0 +1,16 @@
+.table-custom tbody tr:nth-child(odd) {
+    background-color: #FFF2ED;
+}
+
+.table-custom tbody tr:nth-child(even) {
+    background-color: #ffffff;
+}
+
+.hover-cell:hover {
+    background-color: #F94C49;
+
+}
+
+.hover-cell:hover a {
+    color: white !important;
+}

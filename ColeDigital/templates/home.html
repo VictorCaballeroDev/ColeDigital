@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block style %}
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
+{% endblock %}
+
+{% block sidebar_btn %}
+    <button class="btn btn-dark ms-2" id="sidebarToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+{% endblock %}
+
+{% block sidebar %}
+    {% include 'barra_lateral.html' %}
+{% endblock %}
+
+{% block content %}
+    <div class="container mt-4">
+        <h1 class="mb-4 text-center">Mis clases</h1>
+        <div id="asignaturas-container" class="row">
+            {% for asignatura in asignaturas %}
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 text-center shadow-sm">
+                        <div class="card-header"><h5 class="card-title fw-bold">{{ asignatura.nombre }}</h5></div>
+                        <div class="card-body">
+                            <i class="fas fa-book fa-3x mb-3"></i>
+                        </div>
+                        <div class="card-body border-top">
+                            {% if grupo == 'estudiante' %}
+                                <a href="{% url 'presentacion_asignatura_estudiantes' asignatura.id %}" class="btn btn-primary w-75 fw-bold">Acceder</a>
+                            {% elif grupo == 'profesor' %}
+                                <a href="{% url "presentacion_asignatura_profesores" asignatura.id %}" class="btn btn-primary w-75 fw-bold">Acceder</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}
+
+
+{% block script %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var el = document.getElementById('asignaturas-container');
+        Sortable.create(el, {
+            animation: 150,
+            ghostClass: 'sortable-ghost',
+        });
+    });
+
+    document.getElementById("sidebarToggle").addEventListener("click", function () {
+        document.getElementById("sidebar").classList.toggle("d-none");
+    });
+</script>
+{% endblock %}

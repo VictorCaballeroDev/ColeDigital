@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block content %}
+<div class="container mt-4 d-flex justify-content-center">
+    <div class="card p-4">
+        <h1 class="text-center">Crear Asignatura</h1>       
+            <form method="POST">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="id_nombre" class="form-label">Nombre (Obligatorio):</label>
+                    {{ form.nombre | add_class:"form-control" }}
+                </div>
+
+                <div class="mb-3">
+                    <label for="id_profesores" class="form-label">Profesores (Opcional):</label>
+                    {{ form.profesores | add_class:"form-control" }}
+                </div>
+
+                <div class="mb-3">
+                    <label for="id_estudiantes" class="form-label">Estudiantes (Opcional):</label>
+                    {{ form.estudiantes | add_class:"form-control" }}
+                </div>
+
+                <button type="submit" class="btn btn-primary mt-3 mb-3 me-2 text-dark fw-bold">Guardar y continuar</button>
+                <button type="submit" name="guardar_otra" class="btn btn-primary mt-3 mb-3 text-dark fw-bold">Guardar y añadir otra asignatura</button>
+                
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <a href="{% url 'gestionar_asignaturas' %}" class="btn btn-secondary mb-3 me-2">Volver a Asignaturas</a>
+                        <a href="{% url 'panel_administracion' %}" class="btn btn-secondary mb-3">Volver al panel de administración</a>
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-center text-success">
+                    {% for message in messages %}
+                        <p>{{message}}</p>
+                    {% endfor %}
+                </div>
+            </form>
+    </div>
+</div>
+{% endblock %}

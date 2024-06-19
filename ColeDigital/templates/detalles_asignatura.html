@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% load static %}
+
+
+{% block content %}
+    <div class="container mt-4">
+        <h1 class="text-center">Detalles de la asignatura: <span class="text-danger fw-bold">{{ asignatura.nombre }}</span></h1>
+
+        <div class="section mt-4">
+            <div class="row justify-content-md-center">
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center">
+                        <h2>Profesores <a href="#" class="btn btn-outline-info btn-sm ms-2" data-bs-toggle="modal" data-bs-target="#modal-apuntar-profesor"><i class="fas fa-plus"></i></a></h2>
+                        <div class="text-success ms-3">
+                            {% for message in messages %}
+                                {% if message.extra_tags == 'messages_profesores' %}
+                                    <p class="mb-0">{{message}}</p>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <ul class="list-group" style="background-color: #EDFFFF;">
+                        {% if profesores %}
+                            {% for profesor in profesores %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center fw-bold" style="background-color: #EDFFFF;">{{ profesor.nombre }} 
+                                <button class="btn btn-outline-dark btn-sm ms-2 fw-bold desapuntar-profesor-btn" data-bs-toggle="modal" data-bs-target="#modal-desapuntar-profesor" data-bs-nombreprofesor="{{ profesor.nombre }}" data-bs-idprofesor="{{ profesor.id }}">Desapuntar</button>
+                            </li>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-info fw-bold">Esta asignatura no tiene profesores, añada uno pulsando en el botón +</p>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section mt-4">
+            <div class="row justify-content-md-center">
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center">
+                        <h2>Estudiantes <a href="#" class="btn btn-outline-success btn-sm ms-2 fw-bold" data-bs-toggle="modal" data-bs-target="#modal-apuntar-estudiantes"><i class="fas fa-plus"></i></a></h2>
+                        <div class="text-success ms-3">
+                            {% for message in messages %}
+                                {% if message.extra_tags == 'messages_estudiantes' %}
+                                    <p class="mb-0">{{message}}</p>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <ul class="list-group" style="background-color: #EDFFEE;">
+                        {% if estudiantes %}
+                            {% for estudiante in estudiantes %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center fw-bold" style="background-color: #EDFFEE;">{{ estudiante.nombre }} 
+                                <button class="btn btn-outline-dark btn-sm ms-2 fw-bold" onclick="desapuntarEstudiante('{{ estudiante.id }}')">Desapuntar</button>
+                            </li>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-success fw-bold">Esta asignatura no tiene estudiantes, añada uno pulsando en el botón +</p>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section mt-4">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <a href="{% url 'gestionar_asignaturas' %}" class="btn btn-secondary mt-3 me-2">Volver a Asignaturas</a>
+                    <a href="{% url 'panel_administracion' %}" class="btn btn-secondary mt-3">Volver al panel de administración</a>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+
+    <div class="modal fade" id="modal-apuntar-profesor" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Añadir Profesores (Puede seleccionar varios)</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="POST">
+                        {% csrf_token %}
+                        {{ form_apuntar_profesor.as_p }}
+                        <button type="submit" name="form-apuntar-profesor" class="btn btn-info fw-bold text-dark">Añadir</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modal-apuntar-estudiantes" tabindex="-1" role="dialog" aria-labelledby="form_apuntar_estudiantes" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="form_apuntar_estudiantes">Añadir Estudiantes (Puede seleccionar varios)</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="POST">
+                        {% csrf_token %}
+                        {{ form_apuntar_estudiantes.as_p }}
+                        <button type="submit" name="form-apuntar-estudiante" class="btn btn-success fw-bold text-dark">Añadir</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modal-desapuntar-profesor" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Desapuntar profesor</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Esta accion eliminará al profesor de la asignatura {{asignatura.nombre}} </p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline-dark fw-bold" id="confirmar-desapuntar">Desapuntar</button>
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block script %}
+    <script>
+        const id_asignatura = {{ asignatura.id }}
+    </script>
+    <script src="{% static 'js/detalles_asignatura.js' %}"></script>
+{% endblock %}

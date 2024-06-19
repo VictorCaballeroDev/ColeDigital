@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block style %}
+<link rel="stylesheet" href="{% static 'css/panel_administracion.css' %}">
+{% endblock %}
+
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4 text-center">Panel de Administración</h1>
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 text-center border-success bg-card-estudiantes shadow-sm">
+                <div class="card-header bg-success"><h4 class="card-title">Gestionar Estudiantes</h4></div>
+                <div class="card-body">
+                    <h5 class="card-subtitle mb-3 text-success fw-bold">En la página Estudiantes podrá:</h5>
+                    <ul class="list-group list-group-flush fw-bold mb-3">
+                        <li class="list-group-item bg-card-estudiantes"></li>
+                        <li class="list-group-item text-success bg-card-estudiantes">Ver la lista de estudiantes registrados</li>
+                        <li class="list-group-item text-success bg-card-estudiantes">Ver el perfil de un estudiante concreto</li>
+                        <li class="list-group-item text-success bg-card-estudiantes">Registrar nuevos estudiantes</li>
+                        <li class="list-group-item text-success bg-card-estudiantes">Editar la información personal de los estudiantes registrados</li>
+                        <li class="list-group-item text-success bg-card-estudiantes">Apuntar en asignaturas a los estudiantes</li>
+                        <li class="list-group-item text-success bg-card-estudiantes">Dar de baja en asignaturas a los estudiantes</li>
+                        <li class="list-group-item text-success bg-card-estudiantes">Eliminar estudiantes de la plataforma</li>
+                      </ul>
+                </div>
+                <div class="card-footer border-success">
+                    <a href="{% url 'gestionar_estudiantes' %}" class="btn btn-success w-75 mt-3 mb-3 text-dark fw-bold">Ir a Estudiantes</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 text-center border-info bg-card-profesores shadow-sm">
+                <div class="card-header bg-info"><h4 class="card-title">Gestionar Profesores</h4></div>
+                <div class="card-body">
+                    <h5 class="card-subtitle mb-3 text-info fw-bold">En la página Profesores podrá:</h5>
+                    <ul class="list-group list-group-flush fw-bold mb-3">
+                        <li class="list-group-item text-info bg-card-profesores"></li>
+                        <li class="list-group-item text-info bg-card-profesores">Ver la lista de profesores registrados</li>
+                        <li class="list-group-item text-info bg-card-profesores">Ver el perfil de un profesor concreto</li>
+                        <li class="list-group-item text-info bg-card-profesores">Registrar nuevos profesores</li>
+                        <li class="list-group-item text-info bg-card-profesores">Editar la información personal de los profesores registrados</li>
+                        <li class="list-group-item text-info bg-card-profesores">Apuntar en asignaturas a los profesores</li>
+                        <li class="list-group-item text-info bg-card-profesores">Dar de baja en asignaturas a los profesores</li>
+                        <li class="list-group-item text-info bg-card-profesores">Eliminar profesores de la plataforma</li>
+                      </ul>
+                </div>
+                <div class="card-footer border-info">
+                    <a href="{% url 'gestionar_profesores' %}" class="btn btn-info w-75 mt-3 mb-3 text-dark fw-bold">Ir a Profesores</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 text-center border-danger bg-card-asignaturas shadow-sm">
+                <div class="card-header bg-danger"><h4 class="card-title">Gestionar Asignaturas</h4></div>
+                <div class="card-body">
+                    <h5 class="card-subtitle mb-3 text-danger fw-bold">En la página Asignaturas podrá:</h5>
+                    <ul class="list-group list-group-flush mb-3 text-danger fw-bold">
+                        <li class="list-group-item text-danger bg-card-asignaturas"></li>
+                        <li class="list-group-item text-danger bg-card-asignaturas">Ver la lista de asignaturas existentes</li>
+                        <li class="list-group-item text-danger bg-card-asignaturas">Ver los detalles de una asignatura concreta</li>
+                        <li class="list-group-item text-danger bg-card-asignaturas">Crear nuevas asignaturas</li>
+                        <li class="list-group-item text-danger bg-card-asignaturas">Editar la información de las asignaturas</li>
+                        <li class="list-group-item text-danger bg-card-asignaturas">Apuntar en las asignaturas a profesores y alumnos</li>
+                        <li class="list-group-item text-danger bg-card-asignaturas">Dar de baja en las asignaturas a profesores y alumnos</li>
+                        <li class="list-group-item text-danger bg-card-asignaturas">Eliminar asignaturas de la plataforma</li>
+                      </ul>
+                </div>
+                <div class="card-footer border-danger">
+                    <a href="{% url 'gestionar_asignaturas' %}" class="btn btn-danger w-75 mt-3 mb-3 text-dark fw-bold">Ir a Asignaturas</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

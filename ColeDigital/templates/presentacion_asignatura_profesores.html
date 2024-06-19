@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% block style %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
+{% endblock style %}
+
+{% block sidebar_btn %}
+    <button class="btn btn-dark ms-2" id="sidebarToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+{% endblock %}
+
+{% block sidebar %}
+    {% include 'barra_lateral.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4 text-center">{{ asignatura.nombre }}</h1>
+    <ul class="nav nav-tabs" id="asignaturaTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="tablon-tab" data-bs-toggle="tab" data-bs-target="#tablon" type="button" role="tab" aria-controls="tablon" aria-selected="true">Tablón</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tareas-tab" data-bs-toggle="tab" data-bs-target="#tareas" type="button" role="tab" aria-controls="tareas" aria-selected="false">Tareas</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="miembros-tab" data-bs-toggle="tab" data-bs-target="#miembros" type="button" role="tab" aria-controls="miembros" aria-selected="false">Miembros</button>
+        </li>
+    </ul>
+    <div class="tab-content" id="asignaturaTabsContent">
+        <div class="tab-pane fade show active" id="tablon" role="tabpanel" aria-labelledby="tablon-tab">
+            <div class="mt-4">
+                
+                <h3>Foro de la asignatura</h3>
+                <p>Aquí se mostrarán las publicaciones del foro...</p>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="tareas" role="tabpanel" aria-labelledby="tareas-tab">
+            <div class="mt-4">
+                <h3>Lista de Tareas<button class="btn btn-outline-primary btn-sm ms-2" data-bs-toggle="modal" data-bs-target="#modal-crear-tarea"><i class="fas fa-plus"></i></button></h3>
+                
+                {% if tareas %}
+                    {% for tarea in tareas %}
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ tarea.titulo }}</h5>
+                                <p class="card-text">{{ tarea.descripcion }}</p>
+                                <!-- Aquí puedes agregar más información sobre la tarea, como fecha de entrega -->
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-warning fw-bold">Esta asignatura no tiene tareas</p>
+                {% endif %}
+            </div>
+        </div>
+        <div class="tab-pane fade" id="miembros" role="tabpanel" aria-labelledby="miembros-tab">
+            <div class="mt-4">
+                <h3>Miembros de la Asignatura</h3>
+                <div class="row">
+                    <div class="col-6">
+                        <h5>Profesores</h5>
+                        <ul class="list-group mb-3">
+                            {% if asignatura.profesores.all %}
+                                {% for profesor in asignatura.profesores.all %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center fw-bold">{{ profesor.nombre }}</li>
+                                {% endfor %}
+                            {% else %}
+                                <p class="text-info fw-bold">Esta asignatura no tiene profesores</p>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-6">
+                        <h5>Estudiantes</h5>
+                        <ul class="list-group">
+                            {% if asignatura.estudiantes.all %}
+                                {% for estudiante in asignatura.estudiantes.all %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center fw-bold">{{ estudiante.nombre }}</li>
+                                {% endfor %}
+                            {% else %}
+                                <p class="text-success fw-bold">Esta asignatura no tiene estudiantes</p>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modal-crear-tarea" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Crear nueva tarea en: {{asignatura.nombre}}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" id="crear-tarea-form">
+                    {% csrf_token %}
+                    {{ form_tarea.as_p }}
+                    <button type="submit" name="form-cambio-nombre" class="btn btn-primary fw-bold">Crear</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block script %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/locales/bootstrap-datepicker.es.min.js"></script>
+<script>
+    document.getElementById("sidebarToggle").addEventListener("click", function () {
+        document.getElementById("sidebar").classList.toggle("d-none");
+    });
+
+    $(document).ready(function(){
+        $('.datepicker').datepicker({
+            format: 'dd-mm-yyyy',
+            autoclose: true,
+            language: 'es'
+            
+        });
+    });
+</script>
+{% endblock %}
