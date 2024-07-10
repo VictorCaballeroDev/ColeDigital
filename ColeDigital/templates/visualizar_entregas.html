@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block sidebar_btn %}
+    <button class="btn btn-dark ms-2" id="sidebarToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+{% endblock %}
+
+{% block sidebar %}
+    {% include 'barra_lateral.html' %}
+{% endblock %}
+
+{% block content %}
+    <div class="container mt-4">
+        <h3 class="text-center mb-4">Entregas de los estudiantes en la tarea: {{tarea.titulo}}</h3>
+        <div class="row justify-content-center">
+            <div class="col-6">
+                {% if entregas.exists %}
+                    <div class="list-group">
+                        {% for entrega in entregas.all %}
+                            <a href="{% url 'corregir_entrega' entrega.id %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                <div>
+                                    {{ entrega.estudiante.nombre }} - 
+                                    {% if entrega.puntual %}
+                                        <span class="text-success"><i class="fas fa-check"></i> Entregado a tiempo</span>
+                                    {% else %}
+                                        <span class="text-danger"><i class="fas fa-times"></i> Entregado fuera de plazo</span>
+                                    {% endif %}
+                                </div>
+                                <span>{% if entrega.correccion %}{{ entrega.correccion.puntuacion }}{% else %}--{% endif %}/100</span>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-center">Aún no hay entregas para esta tarea...</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock  %}
+
+{% block script %}
+{% endblock %}

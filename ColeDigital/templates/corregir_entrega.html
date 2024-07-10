@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block sidebar_btn %}
+    <button class="btn btn-dark ms-2" id="sidebarToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+{% endblock %}
+
+{% block sidebar %}
+    {% include 'barra_lateral.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h3 class="text-center mb-4">Entrega de {{estudiante.nombre}} en la tarea: {{tarea.titulo}}</h3>
+    <div>
+        {% if entrega.comentario %}
+            <p><i class="fas fa-comment"></i> Comentario del estudiante: {{entrega.comentario}}</p>
+        {% else %}
+            <p><i class="fas fa-comment"></i> No se adjuntó ningún comentario en la entrega</p>
+        {% endif %}
+
+        {% if entrega.archivos.exists %}
+            <p><i class="fas fa-file"></i> Archivos adjuntos en la entrega:</p>
+            {% for archivo in entrega.archivos.all %}
+                <p class="ms-3">
+                {% if archivo.archivo.name|lower|slice:"-4:" == '.pdf' %}
+                    <i class="fas fa-file-pdf"></i>
+                {% elif archivo.archivo.name|lower|slice:"-4:" == '.doc' or archivo.archivo.name|lower|slice:"-5:" == '.docx' %}
+                    <i class="fas fa-file-word"></i>
+                {% elif archivo.archivo.name|lower|slice:"-4:" == '.txt' %}
+                    <i class="fas fa-file-alt"></i>
+                {% elif archivo.archivo.name|lower|slice:"-4:" == '.jpg' or archivo.archivo.name|lower|slice:"-5:" == '.jpeg' or archivo.archivo.name|lower|slice:"-4:" == '.png' %}
+                    <i class="fas fa-file-image"></i>
+                {% else %}
+                    <i class="fas fa-file"></i>
+                {% endif %}
+                <a href="{{archivo.archivo.url}}"> {{archivo.archivo.name}}</a></p>
+            {% endfor %}
+        {% else %}
+            <p><i class="fas fa-file"></i> No se adjuntó ningún archivo en la entrega</p>
+        {% endif %}
+
+        <p><i class="fas fa-calendar-alt"></i> Entregado en la fecha: <b>{{entrega.fecha_entrega}}</b></p>
+        {% if not entrega.puntual %}
+            <p class="text-danger"><i class="fas fa-times"></i> Entregado fuera de plazo</p>
+        {% else %}
+            <p class="text-success"><i class="fas fa-check"></i> Entregado a tiempo</p>
+        {% endif %}
+    </div>
+
+    <!-- Formulario de corrección -->
+    <div class="mt-4">
+        <h4>Corrección</h4>
+        <form method="post">
+            {% csrf_token %}
+            {{form_correccion.as_p}}
+            {% if correccion %}
+                <button type="submit" class="btn btn-primary">Actualizar Corrección</button>
+            {% else %}
+                <button type="submit" class="btn btn-primary">Guardar Corrección</button>
+            {% endif %}
+            <a href="{% url "visualizar_entregas" tarea.id %}" class="btn btn-secondary">Volver a lista de entregas</a>
+        </form>
+    </div>
+
+</div>
+{% endblock  %}
+
+{% block script %}
+{% endblock  %}

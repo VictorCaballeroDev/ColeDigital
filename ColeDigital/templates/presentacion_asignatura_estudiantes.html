@@ -21,36 +21,82 @@
             <button class="nav-link" id="tareas-tab" data-bs-toggle="tab" data-bs-target="#tareas" type="button" role="tab" aria-controls="tareas" aria-selected="false">Tareas</button>
         </li>
         <li class="nav-item" role="presentation">
+            <button class="nav-link" id="reuniones-tab" data-bs-toggle="tab" data-bs-target="#reuniones" type="button" role="tab" aria-controls="reuniones" aria-selected="false">Reuniones</button>
+        </li>
+        <li class="nav-item" role="presentation">
             <button class="nav-link" id="miembros-tab" data-bs-toggle="tab" data-bs-target="#miembros" type="button" role="tab" aria-controls="miembros" aria-selected="false">Miembros</button>
         </li>
     </ul>
     <div class="tab-content" id="asignaturaTabsContent">
+        <!-- FORO -->
         <div class="tab-pane fade show active" id="tablon" role="tabpanel" aria-labelledby="tablon-tab">
             <div class="mt-4">
-                <!-- Aquí puedes incluir el foro de la asignatura -->
-                <h3>Foro de la asignatura</h3>
-                <p>Aquí se mostrarán las publicaciones del foro...</p>
+                {% if foro %}
+                    <h3 class="text-center">Bienvenido a {{asignatura.foro.titulo}}</h3>
+                    
+                    {% for mensaje in mensajes %}
+                    <div style="margin-left: {{ mensaje.nivel|default:0 }}em;">
+                        <p><strong>{{ mensaje.autor.username }}</strong> - {{ mensaje.fecha_creacion }}</p>
+                        <p>{{ mensaje.contenido }}</p>
+                        {% include "respuesta.html" with mensaje=mensaje %}
+                    </div>
+                    {% empty %}
+                        <p class="text-center">No hay mensajes en el foro...</p>
+                    {% endfor %}
+
+                {% endif %}
             </div>
         </div>
+
+        <!-- LISTADO DE TAREAS -->
         <div class="tab-pane fade" id="tareas" role="tabpanel" aria-labelledby="tareas-tab">
             <div class="mt-4">
-                <h3>Lista de Tareas</h3>
-                <!-- Aquí puedes incluir la lista de tareas -->
-                {% if tareas %}
-                    {% for tarea in tareas %}
+                <h3 class="text-center mb-3">Lista de Tareas</h3>
+                <div class="row justify-content-center">
+                    <div class="col-6">
+                        {% if tareas %}
+                            <div class="list-group">
+                                {% for tarea in tareas %}
+                                    <a href="{% url "detalles_tarea_estudiante" tarea.id %}" class="list-group-item list-group-item-action">
+                                        <div class="row">
+                                            <div class="col-10">
+                                                <h5 class="card-title">{{ tarea.titulo }}</h5>
+                                                <p class="card-text">Fecha entrega: {{tarea.fecha_entrega}}</p>
+                                            </div>  
+                                        </div>
+                                    </a>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="text-warning text-center fw-bold">Esta asignatura no tiene tareas</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LISTADO DE REUNIONES -->
+        <div class="tab-pane fade" id="reuniones" role="tabpanel" aria-labelledby="reuniones-tab">
+            <div class="mt-4">
+                <h3>Lista de Reuniones</h3>
+                
+                {% if reuniones %}
+                    {% for r in reuniones %}
                         <div class="card mb-3">
                             <div class="card-body">
-                                <h5 class="card-title">{{ tarea.titulo }}</h5>
-                                <p class="card-text">{{ tarea.descripcion }}</p>
-                                <!-- Aquí puedes agregar más información sobre la tarea, como fecha de entrega -->
+                                <h5 class="card-title">{{ r.titulo }}</h5>
+                                <p class="card-text">{{ r.fecha_inicio }}</p>
+                                <a class="btn btn-primary" href="{{ r.enlace }}">Acceder</a>
                             </div>
                         </div>
                     {% endfor %}
                 {% else %}
-                    <p class="text-warning fw-bold">Esta asignatura no tiene tareas</p>
+                    <p class="text-primary fw-bold">Esta asignatura no tiene reuniones</p>
                 {% endif %}
             </div>
         </div>
+
+        <!-- LISTADO DE PARTICIPANTES -->
         <div class="tab-pane fade" id="miembros" role="tabpanel" aria-labelledby="miembros-tab">
             <div class="mt-4">
                 <h3>Miembros de la Asignatura</h3>
@@ -85,6 +131,7 @@
                 </div>
             </div>
         </div>
+        
     </div>
 </div>
 {% endblock %}

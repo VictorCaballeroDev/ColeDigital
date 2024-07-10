@@ -1,0 +1,7 @@
+{% for respuesta in mensaje.respuestas.all %}
+    <div style="margin-left: 2em;">
+        <p><strong>{{ respuesta.autor.username }}</strong> - {{ respuesta.fecha_creacion }}</p>
+        <p>{{ respuesta.contenido }}</p>
+        {% include "respuesta.html" with mensaje=respuesta %}
+    </div>
+{% endfor %}

@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% load static %}
+{% block sidebar_btn %}
+    <button class="btn btn-dark ms-2" id="sidebarToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+{% endblock %}
+
+{% block sidebar %}
+    {% include 'barra_lateral.html' %}
+{% endblock %}
+
+{% block content %}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-5">
+            <h3 class="mb-4"><i class="fas fa-tasks"></i> {{tarea.titulo}}</h1>
+            <p>{{tarea.descripcion}}</p>
+
+            <h4 class="mt-4"><i class="fas fa-file"></i> Archivos adjuntos por el profesor</h3>
+            {% if tarea.archivos.exists %}
+                {% for archivo in tarea.archivos.all %}
+                    <p class="ms-3">
+                    {% if archivo.archivo.name|lower|slice:"-4:" == '.pdf' %}
+                        <i class="fas fa-file-pdf"></i>
+                    {% elif archivo.archivo.name|lower|slice:"-4:" == '.doc' or archivo.archivo.name|lower|slice:"-5:" == '.docx' %}
+                        <i class="fas fa-file-word"></i>
+                    {% elif archivo.archivo.name|lower|slice:"-4:" == '.txt' %}
+                        <i class="fas fa-file-alt"></i>
+                    {% elif archivo.archivo.name|lower|slice:"-4:" == '.jpg' or archivo.archivo.name|lower|slice:"-5:" == '.jpeg' or archivo.archivo.name|lower|slice:"-4:" == '.png' %}
+                        <i class="fas fa-file-image"></i>
+                    {% else %}
+                        <i class="fas fa-file"></i>
+                    {% endif %}
+                    <a href="{{archivo.archivo.url}}"> {{archivo.archivo.name}}</a></p>
+                {% endfor %}
+            {% else %}
+            <p>No se adjuntaron archivos para esta tarea.</p>
+            {% endif %}
+        </div>
+        <div class="col-3 ms-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="text-center">Tu trabajo 
+                        {% if entrega %}
+                            <button class="btn btn-outline-warning btn-sm ms-2" data-bs-toggle="modal" data-bs-target="#modal-visualizar-entrega"><i class="fas fa-eye"></i></button>
+                        {% else %}
+                            <button class="btn btn-outline-warning btn-sm ms-2" data-bs-toggle="modal" data-bs-target="#modal-crear-entrega"><i class="fas fa-plus"></i></button>
+                        {% endif %}</h4>
+                <div>
+                <div class="card-body">
+                    {% if entrega %}
+                        {% if not entrega.puntual %}
+                            <p class="text-danger"><i class="fas fa-times"></i> Entregado fuera de plazo</p>
+                        {% else %}
+                        <p class="text-success"><i class="fas fa-check"></i> Has entregado la tarea!</p>
+                        {% endif %}
+                        <p>Entregado en la fecha: {{entrega.fecha_entrega}}</p>
+                        <p>Calificación: {% if entrega.correccion %}{{ entrega.correccion.puntuacion }}/100{% else %}<span class="text-info fw-bold">Tu profesor no ha corregido la entrega todavía.<span>{% endif %}</p>
+                    {% else %}
+                        <p><i class="fas fa-exclamation-triangle text-warning"></i> Todavía no has entregado esta tarea...</p>
+                        <p><i class="fas fa-exclamation text-danger"></i> Fecha de entrega: <b class="">{{tarea.fecha_entrega}}</b></p>
+                        <button class="btn btn-warning w-100 mt-3 text-dark fw-bold" data-bs-toggle="modal" data-bs-target="#modal-marcar-completado">Marcar como completada</button>
+                    {% endif %}
+                </div>
+            </div>
+        <div>
+    <div>
+</div>
+
+
+<!--Bloque ventanas modales-->
+<div class="modal fade" id="modal-crear-entrega" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Subir entrega para la tarea: {{tarea.titulo}}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" enctype="multipart/form-data" id="crear-tarea-form">
+                    {% csrf_token %}
+                    {{ form_entrega.as_p }}
+                    <button type="submit" class="btn btn-warning fw-bold">Entregar</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modal-marcar-completado" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">¿Marcar esta tarea como completada?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>No se adjuntará ningún archivo, pero tu profesor podrá ver que has marcado esta tarea como completada. ¿Deseas continuar?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-warning fw-bold" id="marcar-completada">Marcar como completada</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>                
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modal-visualizar-entrega" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detalles de tu entrega</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                {% if entrega.comentario %}
+                    <p>Comentario: {{entrega.comentario}}</p>
+                {% else %}
+                    <p>No se adjuntó ningún comentario en la entrega</p>
+                {% endif %}
+
+                {% if entrega.archivos.exists %}
+                    <p>Archivos adjuntos en la entrega:</p>
+                    {% for archivo in entrega.archivos.all %}
+                        <p class="ms-3">
+                        {% if archivo.archivo.name|lower|slice:"-4:" == '.pdf' %}
+                            <i class="fas fa-file-pdf"></i>
+                        {% elif archivo.archivo.name|lower|slice:"-4:" == '.doc' or archivo.archivo.name|lower|slice:"-5:" == '.docx' %}
+                            <i class="fas fa-file-word"></i>
+                        {% elif archivo.archivo.name|lower|slice:"-4:" == '.txt' %}
+                            <i class="fas fa-file-alt"></i>
+                        {% elif archivo.archivo.name|lower|slice:"-4:" == '.jpg' or archivo.archivo.name|lower|slice:"-5:" == '.jpeg' or archivo.archivo.name|lower|slice:"-4:" == '.png' %}
+                            <i class="fas fa-file-image"></i>
+                        {% else %}
+                            <i class="fas fa-file"></i>
+                        {% endif %}
+                        <a href="{{archivo.archivo.url}}"> {{archivo.archivo.name}}</a></p>
+                    {% endfor %}
+                {% else %}
+                    <p>No se adjuntó ningún archivo en la entrega</p>
+                {% endif %}
+
+                <p>Entregado en la fecha: <b>{{entrega.fecha_entrega}}</b></p>
+                {% if not entrega.puntual %}
+                    <p class="text-danger"><i class="fas fa-times"></i> Entregado fuera de plazo</p>
+                {% else %}
+                    <p class="text-success"><i class="fas fa-check"></i> Entregado a tiempo</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock  %}
+
+
+{% block script %}
+<script>
+    const id_tarea = {{ tarea.id }}
+</script>
+<script src="{% static 'js/detalles_tarea_estudiante.js' %}"></script>
+<script>
+    document.getElementById("sidebarToggle").addEventListener("click", function () {
+        document.getElementById("sidebar").classList.toggle("d-none");
+    });
+</script>
+{% endblock %}

@@ -36,6 +36,9 @@ def home(request):
     return render(request, 'home.html', context)
 
 
+#######################################
+#### PÁGINA ASIGNATURA ESTUDIANTES ####
+#######################################
 @login_required(login_url='login')
 @usuarios_habilitados(grupos_habilitados=['estudiante'])
 @estudiante_apuntado_asignatura
@@ -43,47 +46,215 @@ def presentacion_asignatura_estudiantes(request, id_asignatura):
     asignatura = get_object_or_404(Asignatura, pk=id_asignatura)
     estudiante = get_object_or_404(Estudiante, user=request.user)
     asignaturas = Asignatura.objects.filter(estudiantes=estudiante)
+    tareas = Tarea.objects.filter(asignatura=asignatura).order_by('fecha_entrega')
     grupo = request.user.groups.all()[0].name
+    foro = getattr(asignatura, 'foro', None)
+
+    if foro:
+        mensajes = foro.mensajes.filter(mensaje_padre__isnull=True).order_by('fecha_creacion')
+    else:
+        mensajes = []
+
+    reuniones = asignatura.reuniones.all()
 
     context = {
         'asignatura': asignatura,
-        'asignaturas' : asignaturas,
-        'grupo' : grupo
-
+        'asignaturas': asignaturas,
+        'tareas': tareas,
+        'grupo': grupo,
+        'reuniones': reuniones,
+        'foro': foro,
+        'mensajes': mensajes
     }
+
     return render(request, 'presentacion_asignatura_estudiantes.html', context)
 
+@login_required(login_url='login')
+@usuarios_habilitados(grupos_habilitados=['estudiante'])
+@tarea_asignada_estudiante
+def detalles_tarea_estudiante(request, id_tarea):
+    tarea = get_object_or_404(Tarea, pk=id_tarea)
+    estudiante = get_object_or_404(Estudiante, user=request.user)
+    # PROCESAR FORMULARIO PARA REALIZAR UNA ENTREGA EN ESTA TAREA
+    if request.method == 'POST':
+        form_entrega = CrearEntregaForm(request.POST, request.FILES)
+        if form_entrega.is_valid():
+            entrega = form_entrega.save(commit=False)
+            entrega.tarea = tarea
+            entrega.estudiante = estudiante
+            entrega.save()
+            if 'archivos' in request.FILES:
+                archivos = request.FILES.getlist('archivos')
+                for archivo in archivos:
+                    ArchivoAdjuntoEntrega.objects.create(entrega=entrega, archivo=archivo)
+            #messages.success(request, 'Tarea añadida correctamente')
+            return redirect('detalles_tarea_estudiante', id_tarea)
+
+    try:
+        entrega = get_object_or_404(Entrega, tarea=tarea, estudiante=estudiante)
+    except:
+        entrega = None
+
+    grupo = request.user.groups.all()[0].name
+    asignaturas = Asignatura.objects.filter(estudiantes=estudiante)
+    form_entrega = CrearEntregaForm()
+
+    context = {
+        'asignaturas': asignaturas,
+        'grupo': grupo,
+        'tarea': tarea,
+        'form_entrega': form_entrega,
+        'entrega': entrega
+    }
+
+    return render(request, 'detalles_tarea_estudiante.html', context)
+
+@login_required(login_url='login')
+@usuarios_habilitados(grupos_habilitados=['estudiante'])
+def marcar_tarea_completada(request):
+    if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        id_tarea = request.POST.get('id_tarea')
+        try:
+            tarea = get_object_or_404(Tarea, pk=id_tarea)
+            estudiante = get_object_or_404(Estudiante, user=request.user)
+            Entrega.objects.create(tarea=tarea, estudiante=estudiante)
+            messages.success(request, 'La tarea se marcó como completada')
+            return JsonResponse({'status':'success'})
+        except:
+            return JsonResponse({'status':'error', 'message':'Algo falló, inténtelo más tarde'})
+        
+
+######################################
+#### PÁGINA ASIGNATURA PROFESORES ####
+######################################
 @login_required(login_url='login')
 @usuarios_habilitados(grupos_habilitados=['profesor'])
 @profesor_apuntado_asignatura
 def presentacion_asignatura_profesores(request, id_asignatura):
     asignatura = get_object_or_404(Asignatura, pk=id_asignatura)
+
     if request.method == 'POST':
-        form_tarea = CrearTareaForm(request.POST)
-        if form_tarea.is_valid():
-            print('hola')
-            tarea = form_tarea.save(commit=False)
-            tarea.asignatura = asignatura
-            tarea.save()
-            messages.success('Tarea añadida correctamente')
-            return redirect('presentacion_asignatura_profesores')
-    
+        if 'crear_tarea' in request.POST:
+            form_tarea = CrearTareaForm(request.POST, request.FILES)
+            if form_tarea.is_valid():
+                tarea = form_tarea.save(commit=False)
+                tarea.asignatura = asignatura
+                tarea.save()
+                if 'archivos' in request.FILES:
+                    archivos = request.FILES.getlist('archivos')
+                    print(request.FILES)
+                    print(archivos)
+                    for archivo in archivos:
+                        ArchivoAdjuntoTarea.objects.create(tarea=tarea, archivo=archivo)
+                #messages.success(request, 'Tarea añadida correctamente')
+                return redirect('presentacion_asignatura_profesores', id_asignatura)
+            
+        elif 'crear_reunion' in request.POST:
+            form_reunion = CrearReunionForm(request.POST)
+            if form_reunion.is_valid():
+                reunion = form_reunion.save(commit=False)
+                reunion.asignatura = asignatura
+                reunion.save()
+                return redirect('presentacion_asignatura_profesores', id_asignatura)
+            
     profesor = get_object_or_404(Profesor, user=request.user)
     asignaturas = Asignatura.objects.filter(profesores=profesor)
     tareas = Tarea.objects.filter(asignatura=asignatura)
     grupo = request.user.groups.all()[0].name
+    foro = getattr(asignatura, 'foro', None)
+
+    if foro:
+        mensajes = foro.mensajes.filter(mensaje_padre__isnull=True).order_by('fecha_creacion')
+    else:
+        mensajes = []
+
+    reuniones = asignatura.reuniones.all()
 
     form_tarea = CrearTareaForm()
+    form_reunion = CrearReunionForm()
 
     context = {
         'asignatura': asignatura,
         'asignaturas' : asignaturas,
         'tareas': tareas,
         'grupo' : grupo,
-        'form_tarea': form_tarea
+        'form_tarea': form_tarea,
+        'reuniones': reuniones,
+        'foro': foro,
+        'mensajes': mensajes,
+        'form_reunion': form_reunion
     }
     
     return render(request, 'presentacion_asignatura_profesores.html', context)
+
+
+@login_required(login_url='login')
+@usuarios_habilitados(grupos_habilitados=['profesor'])
+def eliminar_tarea(request):
+    if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        id_tarea = request.POST.get('id_tarea')
+        try:
+            tarea = get_object_or_404(Tarea, pk=id_tarea)
+            tarea.delete()
+            messages.success(request, 'La tarea '+tarea.titulo+' se eliminó correctamente')
+            return JsonResponse({'status':'success'})
+        except:
+            return JsonResponse({'status':'error', 'message':'Algo falló, inténtelo más tarde'})
+    
+    else:
+        return redirect('home')
+
+@login_required(login_url='login')
+@usuarios_habilitados(grupos_habilitados=['profesor'])
+def visualizar_entregas(request, id_tarea):
+    tarea = get_object_or_404(Tarea, pk=id_tarea)
+    entregas = tarea.entregas
+
+    context = {
+        'tarea': tarea,
+        'entregas': entregas
+    }
+
+    return render(request, 'visualizar_entregas.html', context)
+
+@login_required(login_url='login')
+@usuarios_habilitados(grupos_habilitados=['profesor'])
+def corregir_entrega(request, id_entrega):
+    entrega = get_object_or_404(Entrega, pk=id_entrega)
+    try:
+        correccion = entrega.correccion
+    except:
+        correccion = None
+    
+    if request.method == 'POST':
+        if correccion:
+            form_correccion = CorreccionEntregaForm(request.POST, instance=correccion)
+        else:
+            form_correccion = CorreccionEntregaForm(request.POST)
+        if form_correccion.is_valid():
+            correccion = form_correccion.save(commit=False)
+            correccion.entrega = entrega
+            profesor = get_object_or_404(Profesor, user=request.user)
+            correccion.corrector = profesor
+            correccion.save()
+            return redirect('corregir_entrega', id_entrega)
+    
+    if correccion:
+        form_correccion = CorreccionEntregaForm(instance=correccion)
+    else:
+        form_correccion = CorreccionEntregaForm()
+
+    tarea = entrega.tarea
+    estudiante = entrega.estudiante
+    context = {
+        'entrega': entrega,
+        'tarea': tarea,
+        'estudiante': estudiante,
+        'correccion': correccion,
+        'form_correccion': form_correccion
+    }
+
+    return render(request, 'corregir_entrega.html', context)
 
 #########################################
 #### FUNCIONALIDADES DE AUTENTICACION ###
@@ -163,7 +334,7 @@ def gestionar_asignaturas(request):
             nuevo_nombre = form_cambio_nombre.cleaned_data.get('nombre')
             asignatura.nombre = nuevo_nombre
             asignatura.save()
-            messages.success(request, 'La asignatura "'+viejo_nombre+ '" ahora se llama "'+nuevo_nombre+'"',)
+            messages.success(request, 'La asignatura "'+viejo_nombre+ '" ahora se llama "'+nuevo_nombre+'"')
             return redirect('gestionar_asignaturas')
         
     asignaturas = Asignatura.objects.all().order_by('nombre')

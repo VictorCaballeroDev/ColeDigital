@@ -128,13 +128,67 @@ class CambiarNombreAsignaturaForm(forms.ModelForm):
             'nombre': forms.TextInput(attrs={'required':'true', 'placeholder': 'Nuevo nombre para la asignatura', 'class': 'form-control'}),
         }
 
+### MODIFICACIÓN DEL FILEFIELD
+class MultipleFileInput(forms.ClearableFileInput):
+    allow_multiple_selected = True
+
+
+class MultipleFileField(forms.FileField):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("widget", MultipleFileInput())
+        super().__init__(*args, **kwargs)
+
+    def clean(self, data, initial=None):
+        single_file_clean = super().clean
+        if isinstance(data, (list, tuple)):
+            result = [single_file_clean(d, initial) for d in data]
+        else:
+            result = [single_file_clean(data, initial)]
+        return result
+
+
 class CrearTareaForm(forms.ModelForm):
+
+    archivos = MultipleFileField(widget=MultipleFileInput(attrs={'class':'form-control', 'required': 'false'}))
 
     class Meta:
         model = Tarea
-        fields = ['titulo', 'descripcion', 'fecha_entrega']
+        fields = ['titulo', 'descripcion', 'fecha_entrega', 'archivos']
         widgets = {
             'titulo': forms.TextInput(attrs={'required':'true', 'placeholder': 'ej. Tarea de matemáticas', 'class': 'form-control'}),
             'descripcion': forms.Textarea(attrs={'class': 'form-control'}),
-            'fecha_entrega': forms.DateInput(attrs={'placeholder': 'Sin fecha de entrega', 'class': 'form-control datepicker', 'data-date-format': 'dd/mm/yyyy'}),
+            'fecha_entrega': forms.DateTimeInput(attrs={'placeholder': 'Sin fecha de entrega', 'class': 'form-control datepicker', 'data-date-format': 'dd/mm/yyyy'}),
+        }
+
+
+class CrearEntregaForm(forms.ModelForm):
+
+    archivos = MultipleFileField(widget=MultipleFileInput(attrs={'class':'form-control'}))
+
+    class Meta:
+        model = Entrega
+        fields = ['comentario', 'archivos']
+        widgets = {
+            'comentario': forms.Textarea(attrs={'class': 'form-control'}),
+        }
+
+class CorreccionEntregaForm(forms.ModelForm):
+
+    class Meta:
+        model = CorreccionEntrega
+        fields = ['puntuacion', 'comentario']
+        widgets = {
+            'puntuacion': forms.NumberInput(attrs={'class': 'form-control', 'min': 0, 'max': 100}),
+            'comentario': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+        }
+
+class CrearReunionForm(forms.ModelForm):
+    class Meta:
+        model = Reunion
+        fields = ['titulo', 'fecha_inicio', 'enlace', 'plataforma']
+        widgets = {
+            'titulo': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'ej. Sesión de clase'}),
+            'fecha_inicio': forms.DateTimeInput(attrs={'class': 'form-control datepicker', 'placeholder': 'Seleccione una fecha en el calendario...'}),
+            'enlace': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'ej. https://zoom.us/es'}),
+            'plataforma': forms.Select(attrs={'class': 'form-control'}),
         }

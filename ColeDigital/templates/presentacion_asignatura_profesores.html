@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block style %}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
 {% endblock style %}
@@ -24,36 +25,93 @@
             <button class="nav-link" id="tareas-tab" data-bs-toggle="tab" data-bs-target="#tareas" type="button" role="tab" aria-controls="tareas" aria-selected="false">Tareas</button>
         </li>
         <li class="nav-item" role="presentation">
+            <button class="nav-link" id="reuniones-tab" data-bs-toggle="tab" data-bs-target="#reuniones" type="button" role="tab" aria-controls="reuniones" aria-selected="false">Reuniones</button>
+        </li>
+        <li class="nav-item" role="presentation">
             <button class="nav-link" id="miembros-tab" data-bs-toggle="tab" data-bs-target="#miembros" type="button" role="tab" aria-controls="miembros" aria-selected="false">Miembros</button>
         </li>
     </ul>
+
     <div class="tab-content" id="asignaturaTabsContent">
+
+        <!-- FORO -->
         <div class="tab-pane fade show active" id="tablon" role="tabpanel" aria-labelledby="tablon-tab">
             <div class="mt-4">
-                
-                <h3>Foro de la asignatura</h3>
-                <p>Aquí se mostrarán las publicaciones del foro...</p>
+                {% if foro %}
+                    <h3 class="text-center">Bienvenido a {{asignatura.foro.titulo}}</h3>
+                    
+                    {% for mensaje in mensajes %}
+                    <div style="margin-left: {{ mensaje.nivel|default:0 }}em;">
+                        <p><strong>{{ mensaje.autor.username }}</strong> - {{ mensaje.fecha_creacion }}</p>
+                        <p>{{ mensaje.contenido }}</p>
+                        {% include "respuesta.html" with mensaje=mensaje %}
+                    </div>
+                    {% empty %}
+                        <p>No hay mensajes en el foro.</p>
+                    {% endfor %}
+
+                {% endif %}
             </div>
         </div>
+
+
+        <!-- LISTADO DE TAREAS-->
         <div class="tab-pane fade" id="tareas" role="tabpanel" aria-labelledby="tareas-tab">
             <div class="mt-4">
-                <h3>Lista de Tareas<button class="btn btn-outline-primary btn-sm ms-2" data-bs-toggle="modal" data-bs-target="#modal-crear-tarea"><i class="fas fa-plus"></i></button></h3>
-                
+                <div class="d-flex align-items-center mb-3">
+                    <h3 class="text-center">Lista de Tareas <button class="btn btn-outline-warning btn-sm ms-2" data-bs-toggle="modal" data-bs-target="#modal-crear-tarea"><i class="fas fa-plus"></i></button></h3>
+                    <div class="text-success ms-3">
+                        {% for message in messages %}
+                            <p class="mb-0">{{message}}</p>
+                        {% endfor %}
+                    </div>
+                </div>
                 {% if tareas %}
-                    {% for tarea in tareas %}
-                        <div class="card mb-3">
-                            <div class="card-body">
-                                <h5 class="card-title">{{ tarea.titulo }}</h5>
-                                <p class="card-text">{{ tarea.descripcion }}</p>
-                                <!-- Aquí puedes agregar más información sobre la tarea, como fecha de entrega -->
+                    <div class="list-group">
+                        {% for tarea in tareas %}
+                            <div class="list-group-item">
+                                <div class="row">
+                                    <div class="col-5">
+                                        <h5 class="card-title">{{ tarea.titulo }}</h5>
+                                        <p class="card-text">Fecha entrega: {{tarea.fecha_entrega}}</p>
+                                    </div>
+                                    <div class="col-2 ms-auto">
+                                        <a href="{% url "visualizar_entregas" tarea.id %}" class="btn btn-outline-warning mb-2 d-block fw-bold">Ver entregas</a>
+                                        <a href="#" class="btn btn-outline-primary mb-2 d-block fw-bold">Editar</a>
+                                        <a href="#" class="btn btn-outline-dark d-block fw-bold eliminar-tarea-btn" data-bs-toggle="modal" data-bs-target="#modal-eliminar-tarea" data-bs-id="{{ tarea.id }}">Eliminar</a>
+                                    </div>     
+                                </div>
                             </div>
-                        </div>
-                    {% endfor %}
+                        {% endfor %}
+                    </div>
                 {% else %}
                     <p class="text-warning fw-bold">Esta asignatura no tiene tareas</p>
                 {% endif %}
             </div>
         </div>
+
+        <!-- LISTADO DE REUNIONES -->
+        <div class="tab-pane fade" id="reuniones" role="tabpanel" aria-labelledby="reuniones-tab">
+            <div class="mt-4">
+                <h3>Lista de Reuniones<button class="btn btn-outline-primary btn-sm ms-2" data-bs-toggle="modal" data-bs-target="#modal-crear-reunion"><i class="fas fa-plus"></i></button></h3>
+                
+                {% if reuniones %}
+                    {% for r in reuniones %}
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ r.titulo }}</h5>
+                                <p class="card-text">{{ r.fecha_inicio }}</p>
+                                <a class="btn btn-primary" href="{{ r.enlace }}">Acceder</a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-primary fw-bold">Esta asignatura no tiene reuniones</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- MIEMBROS ASIGNATURA -->
         <div class="tab-pane fade" id="miembros" role="tabpanel" aria-labelledby="miembros-tab">
             <div class="mt-4">
                 <h3>Miembros de la Asignatura</h3>
@@ -88,9 +146,11 @@
                 </div>
             </div>
         </div>
+        
     </div>
 </div>
 
+<!--Bloque ventanas modales-->
 <div class="modal fade" id="modal-crear-tarea" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -99,10 +159,10 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form method="POST" id="crear-tarea-form">
+                <form method="POST" enctype="multipart/form-data" id="crear-tarea-form">
                     {% csrf_token %}
                     {{ form_tarea.as_p }}
-                    <button type="submit" name="form-cambio-nombre" class="btn btn-primary fw-bold">Crear</button>
+                    <button type="submit" name="crear_tarea" class="btn btn-primary fw-bold">Crear</button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                 </form>
             </div>
@@ -110,11 +170,49 @@
     </div>
 </div>
 
+
+<div class="modal fade" id="modal-eliminar-tarea" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">¿Eliminar tarea?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Esta acción eliminará de forma permanente la tarea y las entregas asociadas, ¿desea continuar?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-dark fw-bold" id="confirmar-eliminacion">Eliminar</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>                
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modal-crear-reunion" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Crear nueva reunion en: {{asignatura.nombre}}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" enctype="multipart/form-data" id="crear-tarea-form">
+                    {% csrf_token %}
+                    {{ form_reunion.as_p }}
+                    <button type="submit" name="crear_reunion" class="btn btn-primary fw-bold">Crear</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block script %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/locales/bootstrap-datepicker.es.min.js"></script>
+<script src="{% static 'js/presentacion_asignatura_profesores.js' %}"></script>
 <script>
     document.getElementById("sidebarToggle").addEventListener("click", function () {
         document.getElementById("sidebar").classList.toggle("d-none");
@@ -122,7 +220,7 @@
 
     $(document).ready(function(){
         $('.datepicker').datepicker({
-            format: 'dd-mm-yyyy',
+            format: 'dd/mm/yyyy',
             autoclose: true,
             language: 'es'
             
